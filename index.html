@@ -6,35 +6,151 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vue.js Afterschool Learnings</title>
 
-    <!-- Font Awesome for Icons -->
+    <!-- Vue.js CDN -->
+    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+
+    <!-- Font Awesome for Icons (optional) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <!-- Vue.js -->
-    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <style>
+        /* Internal CSS for styling cuz linking doesnot seem to work not sure why!!! */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #5b7051;
+            color: white;
+            padding: 1rem;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            width: 100px;
+            height: auto;
+        }
+
+        .search-bar {
+            padding: 0.5rem;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+        }
+
+        .lesson-card {
+            background-color: white;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .lesson-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .lesson-card h2 {
+            margin: 10px 0;
+        }
+
+        .lesson-card p {
+            margin: 10px 0;
+        }
+
+        .loading {
+            color: #007bff;
+            font-size: 1.2em;
+        }
+
+        .lesson-rating i {
+            color: gold;
+        }
+
+        .lesson-card span {
+            color: red;
+            font-weight: bold;
+        }
+
+        .checkout-form div {
+            margin-bottom: 10px;
+        }
+
+        .checkout-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .checkout-form input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .checkout-form button {
+            background-color: #28a745;
+            padding: 12px;
+            width: 100%;
+            font-size: 1.2em;
+        }
+
+        .cart-item {
+            margin: 5px 0;
+        }
+    </style>
+
 </head>
 
 <body>
+
     <div id="app">
         <header>
             <img src="images/logo1.png" alt="Website Logo" class="logo">
             <h1>{{ pageTitle }}</h1>
-            <!-- Cart Button with disable condition -->
             <button @click="toggleCheckout" :disabled="cart.length === 0">
                 {{ cart.length }} <span class="fas fa-cart-plus"></span> Checkout
             </button>
         </header>
 
         <main v-if="!showCheckoutPage">
+            <!-- Search bar and Sort buttons -->
             <div>
                 <input type="text" v-model="searchQuery" placeholder="Search for lessons by title..." class="search-bar" />
                 <button @click="sortByPrice('asc')">Sort by Price (Asc)</button>
                 <button @click="sortByPrice('desc')">Sort by Price (Desc)</button>
             </div>
 
-            <div v-if="loading">
+            <!-- Loading Spinner / Indicator -->
+            <div v-if="loading" class="loading">
                 <p>Loading lessons, please wait...</p>
             </div>
 
+            <!-- Display Lessons -->
             <div v-if="!loading && filteredLessons.length > 0">
                 <div v-for="lesson in filteredLessons" :key="lesson.title" class="lesson-card">
                     <h2>{{ lesson.title }}</h2>
@@ -42,7 +158,7 @@
                     <p>{{ lesson.description }}</p>
                     <p>Price: ${{ lesson.price }}</p>
                     <p>Space Available: {{ lesson.availableInventory }}</p>
-                    <p>Rating:
+                    <p class="lesson-rating">Rating:
                         <span v-for="n in lesson.rating"><i class="fa-solid fa-star"></i></span>
                         <span v-for="n in 5 - lesson.rating"><i class="fa-regular fa-star"></i></span>
                     </p>
@@ -56,14 +172,16 @@
                 </div>
             </div>
 
+            <!-- No lessons available message -->
             <div v-if="!loading && filteredLessons.length === 0">
                 <p>No lessons available.</p>
             </div>
         </main>
 
+        <!-- Checkout Section -->
         <section v-if="showCheckoutPage">
             <h2>Registration Page</h2>
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="submitForm" class="checkout-form">
                 <div>
                     <label for="firstName">First Name:</label>
                     <input type="text" id="firstName" v-model="order.firstName" required />
@@ -110,7 +228,7 @@
             <div>
                 <h3>Lessons in Cart:</h3>
                 <ul>
-                    <li v-for="(lesson, index) in cart" :key="lesson.title">
+                    <li v-for="(lesson, index) in cart" :key="lesson.title" class="cart-item">
                         {{ lesson.title }} - ${{ lesson.price }}
                         <button @click="removeFromCart(lesson, index)">Remove</button>
                     </li>
@@ -120,13 +238,12 @@
     </div>
 
     <script>
-        var webstore = new Vue({
+        new Vue({
             el: '#app',
             data: {
                 pageTitle: 'NextGen Learning',
                 cart: [],
                 showCheckoutPage: false,
-                showLessons: true,
                 lessons: [],
                 searchQuery: '',
                 order: {
